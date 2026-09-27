@@ -520,9 +520,11 @@ function vistaMercato(){
       : `<p style="margin:0;color:var(--tenue)">Nessuno scambio concluso finora. La prima mossa a chi ha il coraggio di farla.</p>`}</div>`;
 }
 
+let numAperto = null;
 function vistaNumero(num){
   const u = LEGA.uscite.find(x => x.num === num);
   if (!u) return;
+  numAperto = num;
   $("sec-numero").innerHTML = `<button class="chiudi" id="indietro">Torna indietro</button>
     <div class="card"><span class="tag">${u.tipo === "S" ? "Numero speciale" : "Numero " + u.num}</span>
       <span class="pill">${esc(u.data)}</span>
@@ -536,14 +538,14 @@ const SEZIONI = [["prima","Prima pagina"],["archivio","Archivio"],["classifica",
                  ["statistiche","Statistiche"],["squadre","Squadre"],["mercato","Mercato"]];
 let sezioneCorrente = "prima";
 
-function mostra(id, push){
+function mostra(id, push, ancora){
   document.querySelectorAll("section").forEach(s => s.classList.remove("on"));
   $("sec-" + id).classList.add("on");
   document.querySelectorAll("#nav button").forEach(b =>
     b.setAttribute("aria-current", b.dataset.sez === id ? "true" : "false"));
   if (id !== "numero") sezioneCorrente = id;
   window.scrollTo(0, 0);
-  if (push) history.pushState({sez:id}, "", "#" + id);
+  if (push) history.pushState({sez:id, num:numAperto}, "", ancora || ("#" + id));
 }
 
 function init(){
@@ -559,10 +561,14 @@ function init(){
     const nav = e.target.closest("#nav button");
     if (nav){ mostra(nav.dataset.sez, true); return; }
     const apri = e.target.closest("[data-num]");
-    if (apri){ vistaNumero(parseFloat(apri.dataset.num)); mostra("numero", true); return; }
+    if (apri){ const n = parseFloat(apri.dataset.num);
+      vistaNumero(n); mostra("numero", true, "#n" + n); return; }
     const rosa = e.target.closest("[data-rosa]");
     if (rosa){ $("rosa-" + rosa.dataset.rosa).classList.toggle("on"); return; }
-    if (e.target.id === "indietro"){ history.back(); return; }
+    if (e.target.id === "indietro"){
+      if (history.state && history.state.diretto) mostra("archivio", true);
+      else history.back();
+      return; }
     if (e.target.id === "tema"){
       const scuro = document.documentElement.getAttribute("data-theme") === "dark";
       document.documentElement.setAttribute("data-theme", scuro ? "light" : "dark");
@@ -571,10 +577,32 @@ function init(){
   });
 
   window.addEventListener("popstate", ev => {
-    const id = (ev.state && ev.state.sez) || "prima";
-    mostra(id === "numero" ? sezioneCorrente : id, false);
+    const st = ev.state || {};
+    if (st.sez === "numero" && st.num != null){ vistaNumero(st.num); mostra("numero", false); return; }
+    mostra(st.sez && st.sez !== "numero" ? st.sez : sezioneCorrente, false);
   });
-  history.replaceState({sez:"prima"}, "", "#prima");
+
+  // indirizzo diretto: #n2 apre il numero 2, #classifica apre la sezione
+  function daIndirizzo(primaVolta){
+    const anc = decodeURIComponent((location.hash || "").replace(/^#/, ""));
+    const mn = anc.match(/^n(\d+(?:[.,]\d+)?)$/i);
+    const nRich = mn ? parseFloat(mn[1].replace(",", ".")) : null;
+    if (nRich != null && LEGA.uscite.some(u => u.num === nRich)){
+      if (nRich === numAperto && !primaVolta) return;
+      vistaNumero(nRich);
+      history.replaceState({sez:"numero", num:nRich, diretto:primaVolta}, "", "#n" + nRich);
+      mostra("numero", false);
+      return;
+    }
+    if (SEZIONI.some(s => s[0] === anc) && anc !== "numero"){
+      history.replaceState({sez:anc}, "", "#" + anc);
+      mostra(anc, false);
+      return;
+    }
+    if (primaVolta) history.replaceState({sez:"prima"}, "", "#prima");
+  }
+  window.addEventListener("hashchange", () => daIndirizzo(false));
+  daIndirizzo(true);
   document.documentElement.setAttribute("data-theme", "light");
 }
 init();
