@@ -448,7 +448,8 @@ function vistaClassifica(){
     <h3 class="altre">Le altre classifiche, quelle che lasciano un po' l'amaro in bocca...</h3>
     ${lista("🔥 Miglior punteggio (fantapunti totali)", "tot", false)}
     ${lista("⚽ Gol fatti", "gf", false)}
-    ${lista("😅 Gol subiti", "gs", false)}`;
+    ${lista("😅 Gol subiti", "gs", false)}
+    ${sfigometro()}`;
 }
 
 function vistaStatistiche(){
@@ -534,8 +535,6 @@ function vistaStatistiche(){
       .map(([k,v],i) => `<tr${i ? "" : ' class="primo"'}><td class="n">${i+1}</td>
       <td><img class="mini" src="${SQ[k].logo}">\xA0${esc(SQ[k].breve)}</td>
       <td class="r"><b>${v}</b></td></tr>`).join("")}</tbody></table>`);
-
-  blocchi.push(sfigometro());
 
   $("sec-statistiche").innerHTML = blocchi.join("");
 }
