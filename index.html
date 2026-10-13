@@ -798,8 +798,9 @@ function init(){
     if (anc === "sfigometro"){
       history.replaceState({sez:"classifica"}, "", "#sfigometro");
       mostra("classifica", false);
-      const el = document.querySelector(".sfg-testa");
-      if (el) setTimeout(() => el.scrollIntoView({behavior:"smooth", block:"start"}), 60);
+      const vai = () => { const el = document.querySelector(".sfg-testa"); if (el) el.scrollIntoView({block:"start"}); };
+      [0, 150, 500, 1200].forEach(t => setTimeout(vai, t));
+      window.addEventListener("load", () => setTimeout(vai, 100), {once:true});
       return;
     }
     if (SEZIONI.some(s => s[0] === anc) && anc !== "numero"){
