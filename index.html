@@ -798,9 +798,16 @@ function init(){
     if (anc === "sfigometro"){
       history.replaceState({sez:"classifica"}, "", "#sfigometro");
       mostra("classifica", false);
-      const vai = () => { const el = document.querySelector(".sfg-testa"); if (el) el.scrollIntoView({block:"start"}); };
-      [0, 150, 500, 1200].forEach(t => setTimeout(vai, t));
-      window.addEventListener("load", () => setTimeout(vai, 100), {once:true});
+      const meta = () => { const el = document.querySelector(".sfg-testa"); return el ? el.getBoundingClientRect().top + window.scrollY - 64 : 0; };
+      const scorri = () => {
+        const da = window.scrollY, a = meta(), t0 = performance.now(), dur = 1100;
+        const passo = t => { const k = Math.min(1, (t - t0) / dur), e = k < .5 ? 2*k*k : 1 - Math.pow(-2*k + 2, 2) / 2;
+          window.scrollTo(0, da + (a - da) * e); if (k < 1) requestAnimationFrame(passo); };
+        requestAnimationFrame(passo);
+      };
+      const parti = () => setTimeout(scorri, 350);
+      if (document.readyState === "complete") parti(); else window.addEventListener("load", parti, {once:true});
+      setTimeout(() => { if (Math.abs(window.scrollY - meta()) > 40) scorri(); }, 2600);
       return;
     }
     if (SEZIONI.some(s => s[0] === anc) && anc !== "numero"){
