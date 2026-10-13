@@ -558,9 +558,11 @@ function sfigometro(){
     return {k:o.k, pt: rr.pt, mer:+o.mer.toFixed(1), diff:+(rr.pt - o.mer).toFixed(1)};
   }).sort((a,b) => b.mer - a.mer || b.pt - a.pt);
   const posMer = {}; righe.forEach((r,i) => posMer[r.k] = i+1);
-  const fort = righe.slice().sort((a,b) => b.diff - a.diff)[0];
-  const sfig = righe.slice().sort((a,b) => a.diff - b.diff)[0];
-  const primo = righe[0];
+  const salto = k => posMer[k] - posReale[k];
+  const fort = righe.slice().sort((a,b) => b.diff - a.diff || salto(b.k) - salto(a.k) || b.pt - a.pt)[0];
+  const sfig = righe.slice().sort((a,b) => a.diff - b.diff || salto(a.k) - salto(b.k) || b.pt - a.pt)[0];
+  const giusto = righe.slice().sort((a,b) => Math.abs(a.diff) - Math.abs(b.diff) || Math.abs(salto(a.k)) - Math.abs(salto(b.k)) || b.pt - a.pt)[0];
+  const posti = (k, su) => { const d = su ? salto(k) : -salto(k); return d > 0 ? `, ${d} ${d === 1 ? "posto" : "posti"} in ${su ? "più" : "meno"}` : ""; };
   const segno = v => v > 0 ? `<span class="sfg-pos">+${v}</span>` : v < 0 ? `<span class="sfg-neg">${v}</span>` : `<span class="sfg-zero">0</span>`;
   const mossa = k => { const d = posReale[k] - posMer[k]; return d > 0 ? `<span class="sfg-pos">▲${d}</span>` : d < 0 ? `<span class="sfg-neg">▼${-d}</span>` : `<span class="sfg-zero">=</span>`; };
   const pr = (em, et, o, vl) => `<div class="pr"><div class="em">${em}</div><div class="et">${et}</div>
@@ -574,9 +576,9 @@ function sfigometro(){
       Non è la classifica vera: è quella che dice quanto hai meritato. La differenza tra i punti veri e quelli meritati è lo sfigometro:
       sotto zero sei sfortunato, sopra zero ringrazia il calendario.</p></div>
     <div class="sfg-premi">
-      ${pr("🍀", "Il più fortunato", fort, (fort.diff > 0 ? "+" : "") + fort.diff + " punti regalati")}
-      ${pr("🌧️", "Il più sfortunato", sfig, sfig.diff + " punti rubati")}
-      ${pr("👑", "Primo senza sfiga", primo, primo.mer + " punti meritati")}
+      ${pr("🍀", "Il più fortunato", fort, (fort.diff > 0 ? "+" : "") + fort.diff + " punti regalati" + posti(fort.k, true))}
+      ${pr("🌧️", "Il più sfortunato", sfig, sfig.diff + " punti rubati" + posti(sfig.k, false))}
+      ${pr("⚖️", "Il più giusto", giusto, (giusto.diff > 0 ? "+" : "") + giusto.diff + ", fortuna quasi a zero")}
     </div>
     <div class="card" style="margin-bottom:12px">${graficoSfiga(righe)}</div>
     <h3 style="font-size:17px;margin:6px 2px 8px">Dal più fortunato al più sfortunato</h3>
