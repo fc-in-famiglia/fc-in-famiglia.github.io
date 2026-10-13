@@ -85,7 +85,7 @@ tr.primo td{background:var(--giallo);color:#121112;font-weight:700}
 .match .vinto .nome{font-weight:700}
 .soffio{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--bordo);font-size:17px}
 .soffio:last-child{border-bottom:0}
-.sfg-testa{background:#2B2B30;border-radius:16px;padding:18px 14px 12px;margin:30px 0 14px;text-align:center;color:#fff}
+.sfg-testa{scroll-margin-top:64px;background:#2B2B30;border-radius:16px;padding:18px 14px 12px;margin:30px 0 14px;text-align:center;color:#fff}
 .sfg-testa h2{margin:0;font-size:30px;color:#fff;letter-spacing:.01em}
 .sfg-testa .sotto{font-family:"Barlow Condensed",Arial,sans-serif;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--giallo);font-size:14px;margin:4px 0 10px}
 .sfg-testa svg{display:block;width:100%;max-width:300px;margin:0 auto}
@@ -565,7 +565,7 @@ function sfigometro(){
   const mossa = k => { const d = posReale[k] - posMer[k]; return d > 0 ? `<span class="sfg-pos">▲${d}</span>` : d < 0 ? `<span class="sfg-neg">▼${-d}</span>` : `<span class="sfg-zero">=</span>`; };
   const pr = (em, et, o, vl) => `<div class="pr"><div class="em">${em}</div><div class="et">${et}</div>
     <img src="${SQ[o.k].logo}" alt=""><div class="nm">${esc(SQ[o.k].breve)}</div><div class="vl">${vl}</div></div>`;
-  return `<div class="sfg-testa"><h2>Lo Sfigometro</h2>
+  return `<div class="sfg-testa" id="sfigometro-box"><h2>Lo Sfigometro</h2>
     <div class="sotto">Se fosse andata come doveva andare</div>
     ${quadranteSfiga(sfig, fort)}
     <div class="ago">La lancetta segna il più sfortunato: <b>${esc(SQ[sfig.k].breve)}</b> a ${sfig.diff}</div></div>
@@ -793,6 +793,13 @@ function init(){
       vistaNumero(nRich);
       history.replaceState({sez:"numero", num:nRich, diretto:primaVolta}, "", "#n" + nRich);
       mostra("numero", false);
+      return;
+    }
+    if (anc === "sfigometro"){
+      history.replaceState({sez:"classifica"}, "", "#sfigometro");
+      mostra("classifica", false);
+      const el = document.querySelector(".sfg-testa");
+      if (el) setTimeout(() => el.scrollIntoView({behavior:"smooth", block:"start"}), 60);
       return;
     }
     if (SEZIONI.some(s => s[0] === anc) && anc !== "numero"){
